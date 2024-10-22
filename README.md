@@ -1,4 +1,4 @@
-# CAPSTONE DEMO README
+# Diego's Capstone Project
 
 ### Describe your project (big idea)
 
