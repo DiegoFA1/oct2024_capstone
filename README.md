@@ -41,7 +41,7 @@ The Book-Crossing dataset comprises three key files joined into an already prepr
 - Category
 
 
-### Work 
+### Work Sprint 1
 **For the analysis of the data**:
 
 Dropped columns that are not useful for model creation, such as image URLs and book summaries.
@@ -86,4 +86,67 @@ Grouped age into 5 different groups for the same reason.
 **Geographical Data:** Depending on whether we focus on continents or states, one-hot encoding is likely appropriate for better geographical insights.
     
 
-### Results
+### Work Sprint 2
+
+### Data and Preprocessing
+- **Dataset**: Contains over 1 million ratings, general book data, and user demographics.
+- **Preprocessing Steps**:
+  - Dropped irrelevant columns (e.g., image URLs, summaries).
+  - Grouped 6,000+ unique book categories into 11 broader groups.
+  - Encoded categorical data (authors, publishers, categories, geographical data).
+  - One-hot and frequency encoding were used for categorical variables.
+  - Frequency and Target Mean encoding for Author and Publisher
+
+### Post Preprocessing Exploratory Data Analysis (EDA)
+- Data: 
+    - Age: Majority of users fall between 30 and 50 years old.
+    - Year of publication: Most books were published after 1900, with a significant focus on newer publications.
+    - Author & Publisher: Encoded variables (implicit and explicit ratings) reveal similar patterns in user preferences.
+    - Geographical: highlighting small variations in target ratings for these regions.
+    - Language: Explored rating distributions for non-English books (e.g., Spanish, French) and languages marked as unknown showing similar patterns.
+    - Category-Based: Analyzed ratings across various book categories, representing similar patterns.
+
+### Findings
+- **Correlations**:
+  - Slight correlations between ratings, age groups, and publication years.
+  - Age-based category preferences observed.
+- **Categorical Analysis**:
+  - Book title contributes minimally to prediction.
+  - Authors and publishers are slightly influential when encoded by frequency or mean rating.
+
+## Models
+
+- **Algorithms Used**:
+  - Logistic Regression
+  - K-Nearest Neighbors (KNN)
+  - Decision Tree
+- **Performance**:
+  - ~68.43% accuracy on test data.
+  - AUC values between 0.70 and 0.71.
+  - Predicting ratings (0-10 scale): ~65-66% accuracy.
+  - Predicting binary feedback (implicit/explicit): 68.20% accuracy.
+- **Detailed Perfomance Metrics**
+  - Precision: Weighted average of 0.62.
+  - Recall: Weighted average of 0.66.
+  - F1-Score: Weighted average of 0.55.
+- **Confusion Matrix**
+  - Highlighted class imbalances, with most accurate predictions for the majority class (label 0).
+
+
+## Content-Based Recommendation System
+
+### Approach
+- Utilized book title.
+- Grouped by Book title to get similar results, aggrating by rating counts and average.
+
+### Benefits
+- Provided personalized suggestions by aligning book attributes with user preferences.
+- Enhanced user engagement and retention through targeted recommendations.
+
+## Opportunities
+- **Impact**:
+  - Improved recommendation accuracy can drive sales by matching users with books they are more likely to purchase.
+  - Better alignment with user preferences boosts engagement.
+- **Future Enhancements**:
+  - Integration of collaborative filtering for hybrid models.
+
