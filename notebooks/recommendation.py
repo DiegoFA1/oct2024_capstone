@@ -35,39 +35,17 @@ def recommend(book_isbn, knn_model, csr_data, book_isbns, dataframe, n_neighbors
     # Merge with the original DataFrame to fetch additional book metadata
     merged = pd.merge(rec_df, dataframe, left_on="ISBN", right_on="isbn", how="left")
 
-    # Compute explicit ratings (only rows with explicit ratings)
-    explicit_ratings = merged[merged["rating"] > 0]  # Filter for explicit ratings
-    explicit_aggregated = (
-        explicit_ratings.groupby(["ISBN", "Similarity", "book_title", "book_author", "year_of_publication", "publisher", "language", "category"])
-        .agg(
-            avg_rating=("rating", "mean"),  # Average explicit rating
-            explicit_rating_count=("rating", "count")  # Count of explicit ratings
-        )
-        .reset_index()
-    )
-
-    # Compute total interactions (all interactions, including implicit)
-    total_interactions_aggregated = (
-        merged.groupby(["ISBN", "Similarity", "book_title", "book_author", "year_of_publication", "publisher", "language", "category"])
-        .agg(
-            total_interactions=("isbn", "count")  # Count of all interactions
-        )
-        .reset_index()
-    )
-
-    # Merge explicit ratings with total interactions
-    final_aggregated = pd.merge(explicit_aggregated, total_interactions_aggregated, on=["ISBN", "Similarity", "book_title", "book_author", "year_of_publication", "publisher", "language", "category"])
-
+    
     # Sort by similarity and relevance
-    final_aggregated = final_aggregated.sort_values(by=["Similarity", "explicit_rating_count"], ascending=[True, False])
+    merged = merged.sort_values(by=["Similarity", "explicit_rating_count"], ascending=[True, False])
 
     # Reorder and rename columns for better readability
-    final_aggregated = final_aggregated[[
+    merged = merged[[
         "ISBN", "Similarity", "book_title", "book_author", "year_of_publication", 
         "publisher", "language", "category", "avg_rating", 
-        "explicit_rating_count", "total_interactions"
+        "explicit_rating_count", "total_interactions",'img_s','img_m','img_l'
     ]]
-    final_aggregated = final_aggregated.rename(
+    merged = merged.rename(
         columns={
             "book_title": "Title",
             "book_author": "Author",
@@ -79,8 +57,8 @@ def recommend(book_isbn, knn_model, csr_data, book_isbns, dataframe, n_neighbors
     )
 
     # Format numerical columns for cleaner display
-    final_aggregated["Relevance"] = final_aggregated["Relevance"].round(3)
-    final_aggregated["Average Rating"] = final_aggregated["Average Rating"].round(2)
+    merged["Relevance"] = merged["Relevance"].round(3)
+    merged["Average Rating"] = merged["Average Rating"].round(2)
 
-    return final_aggregated
+    return merged
 
