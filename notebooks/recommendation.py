@@ -1,4 +1,25 @@
 import pandas as pd
+import numpy as np
+
+# Title, Dataframe with books, Similarities matrix
+def content_recommender(title, books, similarities, vote_threshold=10) :
+
+    # Get the movie by the title
+    book_index = books[books['book_title'] == title].index
+
+    # Create a dataframe with the movie titles
+    sim_df = pd.DataFrame(
+        {'book': books['book_title'],
+         'similarity': np.array(similarities[book_index, :].todense()).squeeze(),
+         'Number of reviews': books['review_count'],
+         'Avg Rating': books['avg_review_score']
+        })
+
+    # Get the top 10 movies with > 10 votes
+    top_books = sim_df[sim_df['Number of reviews'] > vote_threshold].sort_values(by='similarity', ascending=False).head(10)
+
+    return top_books
+
 
 def recommend(book_isbn, knn_model, csr_data, book_isbns, dataframe, n_neighbors=10):
     """

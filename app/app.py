@@ -5,18 +5,16 @@ import os
 import pandas as pd
 import streamlit as st
 import joblib
-
 import json
 from recommendation import recommend
+from recommendation import content_recommender
 from scipy.sparse import load_npz
 from joblib import load
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Get the directory of the current script
 script_dir = os.path.dirname(__file__)
-
-st.write('Streamlit is an open-source app framework for Machine Learning and Data Science teams. For the docs, please click [here](https://docs.streamlit.io/en/stable/api.html). \
-    This is is just a very small window into its capabilities.')
-
 
 #######################################################################################################################################
 ### LAUNCHING THE APP ON THE LOCAL MACHINE
@@ -29,18 +27,7 @@ st.write('Streamlit is an open-source app framework for Machine Learning and Dat
 
 #######################################################################################################################################
 ### Create a title
-
-st.title("Kickoff - Live coding an app")
-
-# Press R in the app to refresh after changing the code and saving here
-
-### You can try each method by uncommenting each of the lines of code in this section in turn and rerunning the app
-
-### You can also use markdown syntax.
-#st.write('# Our last morning kick off :sob:')
-
-### To position text and color, you can use html syntax
-#st.markdown("<h1 style='text-align: center; color: blue;'>Our last morning kick off</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Book Recomendation System</h1>", unsafe_allow_html=True)
 
 
 #######################################################################################################################################
@@ -48,24 +35,40 @@ st.title("Kickoff - Live coding an app")
 
 ### A. define function to load data
 @st.cache_data # <- add decorators after tried running the load multiple times
-def load_data(file, num_rows):
+def load_data_snippet(file, num_rows=100):
+    # Get the directory of the current script
+    script_dir = os.path.dirname(__file__)
+    path = os.path.join(script_dir, file)
+    df = pd.read_csv(path, index_col=0, nrows= num_rows)
+    return df
+
+@st.cache_data
+def load_data(file):
     # Get the directory of the current script
     script_dir = os.path.dirname(__file__)
     path = os.path.join(script_dir, file)
     df = pd.read_csv(path, index_col=0)
-    df_snippet = pd.read_csv(path, nrows=num_rows, index_col=0)
-    df_snippet = df_snippet.drop(['img_s','img_m','img_l'], axis=1)
-    
-    return df, df_snippet
+    return df
 
 ### B. Load first 100 rows
-df, df_snippet = load_data("Books_data.csv", 100)
+df = load_data("Books_data.csv")
+
+df_snippet = load_data_snippet("PostBooksEDA.csv", 10)
+
+df_books_snippet = load_data_snippet("Books_data.csv", 10)
+df_books_snippet = df_books_snippet.drop(['img_s','img_m','img_l'], axis=1)
+
+df_content = pd.read_csv('../data/PostBooksEDA.csv', index_col=0)
 
 ### C. Display the dataframe in the app
+st.markdown("<h2 style='text-align: center;'>Post Preproccesing - Original Dataframe</h2>", unsafe_allow_html=True)
 st.dataframe(df_snippet)
 
 
 #######################################################################################################################################
+## Display 
+st.markdown("<h2 style='text-align: center;'>Book Specific Data for Recommendations</h2>", unsafe_allow_html=True)
+st.dataframe(df_books_snippet)
 
 
 
@@ -90,10 +93,52 @@ st.dataframe(df_snippet)
 
 
 #######################################################################################################################################
-### MODEL INFERENCE
+### Models
 
-st.subheader("Using pretrained models with user input")
+# First Model Content Based
+# st.markdown("<h2 style='text-align: center;'>Models</h2>", unsafe_allow_html=True)
+# st.markdown("<h3>Content Based - Title model </h3>", unsafe_allow_html=True)
 
+# Group data to calculate review count and average score
+#@st.cache_data
+#def prepare_data(df):
+#    return df.groupby('book_title').agg(
+#        review_count=('rating', 'count'),
+#        avg_review_score=('rating', 'mean')
+#    ).reset_index()
+
+# Vectorize book titles
+#@st.cache_data
+#def compute_similarity(titles):
+#    vectorizer = TfidfVectorizer(stop_words="english", min_df=2)
+#   TF_IDF_matrix = vectorizer.fit_transform(titles)
+#   return cosine_similarity(TF_IDF_matrix, dense_output=False)
+
+# Function to find similar books
+#def content_recommender(selected_title, unique_titles, similarities, vote_threshold=10):
+#    title_index = unique_titles[unique_titles['book_title'] == selected_title].index[0]
+#    similar_indices = similarities[title_index].toarray().argsort()[0][::-1]
+#    similar_books = unique_titles.iloc[similar_indices].reset_index(drop=True)
+#    similar_books = similar_books[similar_books['review_count'] >= vote_threshold]
+#    return similar_books
+
+#st.markdown("<h2 style='text-align: center;'>Models</h2>", unsafe_allow_html=True)
+#st.markdown("<h3>Content Based - Title model </h3>", unsafe_allow_html=True)
+
+
+#unique_titles = prepare_data(df_content)
+#similarities = compute_similarity(unique_titles['book_title'])
+
+#st.markdown("<h4>Harry Potter and the Chamber of Secrets (Book 2) - Recommendations<h4>", unsafe_allow_html=True)
+#similar_books = content_recommender("Harry Potter and the Chamber of Secrets (Book 2)", unique_titles, similarities, vote_threshold=10)
+#st.dataframe(similar_books.head(15))
+
+#st.markdown("<h4>The Eyes of the Dragon - Recommendations<h4>", unsafe_allow_html=True)
+#similar_books = content_recommender("The Eyes of the Dragon", unique_titles, similarities, vote_threshold=10)
+#st.dataframe(similar_books.head(15))
+
+# Second Model
+st.markdown("<h3>Item Based Collaborative Filtering</h3>", unsafe_allow_html=True)
 # A. Load the model using joblib
 # Load the model
 model_path = os.path.join(script_dir, 'model.joblib')
@@ -120,7 +165,7 @@ selected_title = st.selectbox(
 )
 
 
-# C. Use the model to predict sentiment & write result
+# C. Use the model to give recommendations & write result
 if selected_title:
     # Find the corresponding ISBN for the selected title
     selected_isbn = df.loc[df['book_title'] == selected_title, 'isbn'].values
@@ -150,14 +195,3 @@ if selected_title:
 
 
 #######################################################################################################################################
-### Streamlit Advantages and Disadvantages
-    
-st.subheader("Streamlit Advantages and Disadvantages")
-st.write('**Advantages**')
-st.write(' - Easy, Intuitive, Pythonic')
-st.write(' - Free!')
-st.write(' - Requires no knowledge of front end languages')
-st.write('**Disadvantages**')
-st.write(' - Apps all look the same')
-st.write(' - Not very customizable')
-st.write(' - A little slow. Not good for MLOps, therefore not scalable')
