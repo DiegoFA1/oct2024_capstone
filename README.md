@@ -133,3 +133,41 @@ The Book-Crossing dataset comprises three key files joined into an already prepr
   - Better alignment with user preferences boosts engagement.
 - **Future Enhancements**:
   - Integration of collaborative filtering for hybrid models.
+
+
+## Work Sprint 3
+
+### Tasks Completed
+- **Model Building**:
+  - Item-based collaborative filtering.
+  - Built a user interface using Streamlit to visualize recommendations.
+- **Content-Based Recommendation System**:
+  - Created recommendations based on similar books grouped by title.
+- **Collaborative Filtering**:
+  - Used K-Nearest Neighbors (KNN) to find similar books based on user interaction patterns.
+
+---
+
+## Comparison Between Content-Based Model and Item-Based Collaborative Filtering
+
+| **Aspect**                  | **Content-Based Filtering**                                                              | **Item-Based Collaborative Filtering**                                                 |
+|------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| **Definition**               | Content-Based Filtering recommends items similar to the target item based on item features (book titles in this case). | Item-Based Collaborative Filtering recommends items by analyzing similarities between items based on user interaction/ratings data. |
+| **Recommendation Logic**     | Uses book metadata to match user preferences to other books.                             | Uses user-item interaction patterns to determine relationships between items based on similarity across users. |
+| **Data Used**                | Relies on **Book attributes** (titles in this case).                                     | Relies on **user-item interaction history** and ratings.                              |
+| **Similarity Measurement**   | Similarity is computed between items' titles (e.g., cosine similarity between vectors).   | Similarity is computed between items based on user interaction overlap.               |
+| **Cold Start Problem**       | Can still face **cold start** for new users but works well when items are new but feature information exists. | Faces a severe **cold start problem** when new items or users appear, as there is no historical data for similarity computation. |
+| **Data Sparsity**            | Less affected by sparsity because recommendations are based on features rather than user interaction data. | More sensitive to sparsity, especially when users have limited interaction history or ratings. |
+| **Interpretability**         | High interpretability because recommendations can be traced to explicit book titles.      | Interpretability can be lower because recommendations are derived solely from user-item interaction patterns.|
+| **Adaptability to User Preferences** | Limited to individual user preferences using only book titles.                     | Depends on user interaction patterns and may overlook niche preferences unless sufficient data exists. |
+| **Scalability**              | Computationally efficient if item features are precomputed, especially for large datasets. | Computationally expensive if computing similarity matrices between all user-item interactions in large datasets. |
+| **Strengths**                | Simple and interpretable recommendations.                                                | Captures latent user behavior trends.<br> Can discover unexpected associations through user interactions. |
+| **Weaknesses**               | May lead to overly narrow or redundant recommendations (over-specialization).<br> Doesn’t discover cross-genre preferences unless explicitly described by adding more features. | Cold start for new items or users.<br> Performance can degrade if user interaction data is too sparse or noisy. |
+
+---
+
+## Results and Future Work
+
+### Results
+- Content-Based Filtering performed well in personalizing recommendations based on book features.
+- Item-Based Collaborative Filtering showed good personalized recommendations for similar books, leveraging rating data to enhance user experience.
