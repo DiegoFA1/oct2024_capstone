@@ -64,32 +64,11 @@ df_content = pd.read_csv('../data/PostBooksEDA.csv', index_col=0)
 st.markdown("<h2 style='text-align: center;'>Post Preproccesing - Original Dataframe</h2>", unsafe_allow_html=True)
 st.dataframe(df_snippet)
 
-
+st.divider()
 #######################################################################################################################################
 ## Display 
 st.markdown("<h2 style='text-align: center;'>Book Specific Data for Recommendations</h2>", unsafe_allow_html=True)
 st.dataframe(df_books_snippet)
-
-
-
-
-#######################################################################################################################################
-### DATA ANALYSIS & VISUALIZATION
-
-### B. Add filter on side bar after initial bar chart constructed
-
-
-#counts = df["Start Time"].dt.hour.value_counts()
-#st.bar_chart(counts)
-
-
-
-
-
-### The features we have used here are very basic. Most Python libraries can be imported as in Jupyter Notebook so the possibilities are vast.
-#### Visualizations can be rendered using matplotlib, seaborn, plotly etc.
-#### Models can be imported using *.pkl files (or similar) so predictions, classifications etc can be done within the app using previously optimized models
-#### Automating processes and handling real-time data
 
 
 #######################################################################################################################################
@@ -136,7 +115,7 @@ st.dataframe(df_books_snippet)
 #st.markdown("<h4>The Eyes of the Dragon - Recommendations<h4>", unsafe_allow_html=True)
 #similar_books = content_recommender("The Eyes of the Dragon", unique_titles, similarities, vote_threshold=10)
 #st.dataframe(similar_books.head(15))
-
+st.divider()
 # Second Model
 st.markdown("<h3>Item Based Collaborative Filtering</h3>", unsafe_allow_html=True)
 # A. Load the model using joblib
@@ -172,7 +151,7 @@ if selected_title:
 
     if len(selected_isbn) > 0:  # Ensure we have a valid ISBN
         selected_isbn = selected_isbn[0]  # Take the first match if duplicates exist
-        
+
         # Use the recommender function
         recommendations = recommend(
             book_isbn=selected_isbn,  
@@ -180,29 +159,42 @@ if selected_title:
             csr_data=csr_data,
             book_isbns=book_isbns,  # List of ISBNs corresponding to the rows in csr_data
             dataframe=df,  # Original DataFrame with book metadata
-            n_neighbors=10
+            n_neighbors=11
         )
 
+        # Select the searched/selected book (first recommendation)
+        selected_book_row = df[df['isbn'] == selected_isbn].iloc[0]
 
-        # D. Display the recommendations
+        # Center the searched book in the middle of the page 
+        col1, col2, col3 = st.columns([5, 3, 4])  # Create three column spaces
+        with col2:  # Middle space for the searched book
+            st.write(f"**{selected_book_row['book_title']}**")
+            st.write(f"*{selected_book_row['book_author']}*")
+            if 'img_m' in selected_book_row and isinstance(selected_book_row['img_l'], str):
+                st.image(selected_book_row['img_m'], width=200)
 
+        # Show the recommendations section below the central searched book area
+        st.markdown("<h4 style='text-align: center;'>Recommended Books</h4>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([4, 3, 3])
         
-        # Ensure the subset columns exist in your DataFrame
-        st.dataframe(recommendations)
-
-        st.write("### Recommended Books")
-    
-        # Iterate through the recommendations and display title, author, and image
-        cols = st.columns(len(recommendations))  # Create one column per book
-
-        for i, (_, row) in enumerate(recommendations.iterrows()):
-            with cols[i]:  # Place content in each column
+        # Create columns for recommendations (not touching the center display)
+        cols = st.columns(len(recommendations) - 1)  # Subtract 1 because the first book is already shown above
+        for i, (_, row) in enumerate(recommendations.iloc[1:].iterrows()):  # Exclude the selected book itself
+            with cols[i]:  # Display each recommendation
                 st.write(f"**{row['Title']}**")
                 st.write(f"*{row['Author']}*")
-                if 'img_m' in row and isinstance(row['img_s'], str):  # Ensure image URL exists
+                if 'img_l' in row and isinstance(row['img_l'], str):
                     st.image(row['img_l'], width=150)
+
+        st.divider()
+        st.markdown("<h4 style='text-align: center;'>Full Recommendations Relevance DataFrame</h4>", unsafe_allow_html=True)
+        subset_df = recommendations.iloc[1:11].drop(['ISBN','img_s','img_m','img_l'], axis=1)  # Select rows from index 1 through 10 (inclusive)
+        st.dataframe(subset_df)
+
+    
     else:
         st.error("No ISBN found for the selected book title.")
+
 
 
 
