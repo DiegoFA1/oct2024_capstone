@@ -189,6 +189,18 @@ if selected_title:
         
         # Ensure the subset columns exist in your DataFrame
         st.dataframe(recommendations)
+
+        st.write("### Recommended Books")
+    
+        # Iterate through the recommendations and display title, author, and image
+        cols = st.columns(len(recommendations))  # Create one column per book
+
+        for i, (_, row) in enumerate(recommendations.iterrows()):
+            with cols[i]:  # Place content in each column
+                st.write(f"**{row['Title']}**")
+                st.write(f"*{row['Author']}*")
+                if 'img_m' in row and isinstance(row['img_s'], str):  # Ensure image URL exists
+                    st.image(row['img_l'], width=150)
     else:
         st.error("No ISBN found for the selected book title.")
 
